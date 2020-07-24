@@ -55,3 +55,48 @@ func TestListBuckets(t *testing.T) {
 		})
 	}
 }
+
+var size []int64
+var filesCount = 100
+
+func (m *mockS3Client) ListObjectsV2Pages(input *s3.ListObjectsV2Input, fn func(page *s3.ListObjectsV2Output, lastPage bool) bool) error {
+	size = []int64{int64(100)}
+	filesCount = 1
+	return nil
+}
+
+func TestListObjects(t *testing.T) {
+	mockS3Client := &mockS3Client{}
+
+	type args struct {
+		bucketName *string
+		client     s3iface.S3API
+		size       *[]int64
+		filesCount *int
+	}
+
+	tests := []struct {
+		name  string
+		args  args
+		want  []int64
+		want1 int
+	}{
+		{
+			"Retrieve metadata from each bucket object",
+			args{aws.String("bucket"), mockS3Client, &size, &filesCount},
+			[]int64{int64(100)},
+			1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1 := ListObjects(tt.args.bucketName, tt.args.client, tt.args.size, tt.args.filesCount)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ListObjects() got = %v, want %v", got, tt.want)
+			}
+			if got1 != tt.want1 {
+				t.Errorf("ListObjects() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}

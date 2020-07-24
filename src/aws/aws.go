@@ -41,10 +41,7 @@ func ListBuckets(client s3iface.S3API) []*s3.Bucket {
 //how many files have inside and put the object size in an array.
 //
 // Return array with all object sizes and an integer with the files count
-func ListObjects(bucketName *string, client s3iface.S3API) ([]int64, int) {
-	var size []int64
-	filesCount := 0
-
+func ListObjects(bucketName *string, client s3iface.S3API, size *[]int64, filesCount *int) ([]int64, int) {
 	listObjectsV2Input := s3.ListObjectsV2Input{
 		Bucket: bucketName,
 	}
@@ -52,13 +49,13 @@ func ListObjects(bucketName *string, client s3iface.S3API) ([]int64, int) {
 	client.ListObjectsV2Pages(&listObjectsV2Input,
 		func(page *s3.ListObjectsV2Output, lastPage bool) bool {
 			for _, item := range page.Contents {
-				size = append(size, *item.Size)
-				filesCount++
+				*size = append(*size, *item.Size)
+				*filesCount++
 			}
 			return *page.IsTruncated
 		})
 
-	return size, filesCount
+	return *size, *filesCount
 }
 
 // CheckPrice Receive coast explorer instance and tagvalue(bucket name) than query in cost explorer

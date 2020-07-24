@@ -47,12 +47,14 @@ func getMetadata() {
 	awsSession := aws.CreateNewAwsSession()
 	s3Instance := s3.New(awsSession)
 	costexplorerInstance := costexplorer.New(awsSession)
+	var size []int64
+	var filesCount = 0
 
 	buckets := aws.ListBuckets(s3Instance)
 	for _, bucket := range buckets {
 		var bucketDetails structs.BucketInfo
 
-		sizeEachObject, filesCount := aws.ListObjects(bucket.Name, s3Instance)
+		sizeEachObject, filesCount := aws.ListObjects(bucket.Name, s3Instance, &size, &filesCount)
 		bucketPrice := aws.CheckPrice(costexplorerInstance, *bucket.Name)
 
 		bucketDetails.Name = *bucket.Name
