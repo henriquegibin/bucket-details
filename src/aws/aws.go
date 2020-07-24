@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/costexplorer"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 )
 
 // CreateNewAwsSession Create a new aws session using access_key
@@ -27,10 +28,10 @@ func CreateNewAwsSession() *session.Session {
 // ListBuckets Receive s3 instance then list all bucker inside AWS S3.
 //
 // Return array with all buckets
-func ListBuckets(s3Instance *s3.S3) []*s3.Bucket {
-	listBucketsOutput, err := s3Instance.ListBuckets(&s3.ListBucketsInput{})
+func ListBuckets(client s3iface.S3API) []*s3.Bucket {
+	listBucketsOutput, err := client.ListBuckets(&s3.ListBucketsInput{})
 	if err != nil {
-		fmt.Printf("deu erro no list")
+		fmt.Printf("Something goes wrong: %v", err)
 	}
 
 	return listBucketsOutput.Buckets
@@ -40,7 +41,7 @@ func ListBuckets(s3Instance *s3.S3) []*s3.Bucket {
 //how many files have inside and put the object size in an array.
 //
 // Return array with all object sizes and an integer with the files count
-func ListObjects(bucketName *string, s3Instance *s3.S3) ([]int64, int) {
+func ListObjects(bucketName *string, client s3iface.S3API) ([]int64, int) {
 	var size []int64
 	filesCount := 0
 
@@ -48,7 +49,7 @@ func ListObjects(bucketName *string, s3Instance *s3.S3) ([]int64, int) {
 		Bucket: bucketName,
 	}
 
-	s3Instance.ListObjectsV2Pages(&listObjectsV2Input,
+	client.ListObjectsV2Pages(&listObjectsV2Input,
 		func(page *s3.ListObjectsV2Output, lastPage bool) bool {
 			for _, item := range page.Contents {
 				size = append(size, *item.Size)
