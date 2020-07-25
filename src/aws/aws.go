@@ -3,6 +3,7 @@ package aws
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -42,7 +43,7 @@ func ListBuckets(client s3iface.S3API) []*s3.Bucket {
 //how many files have inside and put the object size in an array.
 //
 // Return array with all object sizes and an integer with the files count
-func ListObjects(bucketName *string, client s3iface.S3API, size *[]int64, filesCount *int) ([]int64, int) {
+func ListObjects(bucketName *string, client s3iface.S3API, size *[]int64, filesCount *int, lastModified *time.Time) ([]int64, int, time.Time) {
 	listObjectsV2Input := s3.ListObjectsV2Input{
 		Bucket: bucketName,
 	}
@@ -52,18 +53,21 @@ func ListObjects(bucketName *string, client s3iface.S3API, size *[]int64, filesC
 			for _, item := range page.Contents {
 				*size = append(*size, *item.Size)
 				*filesCount++
+				if item.LastModified.After(*lastModified) { // Otimizar no futuro. o(n)
+					lastModified = item.LastModified
+				}
 			}
 			return *page.IsTruncated
 		})
 
-	return *size, *filesCount
+	return *size, *filesCount, *lastModified
 }
 
 // CheckPrice Receive coast explorer instance and tagvalue(bucket name) than query in cost explorer
 // to check how much this bucket spend this month.
 //
 // Return one string with the amount in dolars
-func CheckPrice(client costexploreriface.CostExplorerAPI, tagValue string) string {
+func CheckPrice(client costexploreriface.CostExplorerAPI, tagValue string) string { // Melhorar essa função. Esta horrivel
 	service := "Amazon Simple Storage Service"
 	metricsValue := "BlendedCost"
 

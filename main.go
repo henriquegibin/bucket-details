@@ -6,6 +6,7 @@ import (
 	"bucket-details/src/structs"
 	"log"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go/service/costexplorer"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -49,18 +50,20 @@ func getMetadata() {
 	costexplorerInstance := costexplorer.New(awsSession)
 	var size []int64
 	var filesCount = 0
+	var lastModified time.Time
 
 	buckets := aws.ListBuckets(s3Instance)
 	for _, bucket := range buckets {
 		var bucketDetails structs.BucketInfo
 
-		sizeEachObject, filesCount := aws.ListObjects(bucket.Name, s3Instance, &size, &filesCount)
+		sizeEachObject, filesCount, lastModified := aws.ListObjects(bucket.Name, s3Instance, &size, &filesCount, &lastModified)
 		bucketPrice := aws.CheckPrice(costexplorerInstance, *bucket.Name)
 
 		bucketDetails.Name = *bucket.Name
 		bucketDetails.CreationDate = *bucket.CreationDate
 		bucketDetails.FilesCount = filesCount
 		bucketDetails.Size = genericfunctions.BucketSize(sizeEachObject)
+		bucketDetails.LastModifiedFromNewestFile = lastModified
 		bucketDetails.Cost = bucketPrice
 		genericfunctions.BeautyPrint(bucketDetails)
 	}
