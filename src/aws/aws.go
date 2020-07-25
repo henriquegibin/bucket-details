@@ -1,8 +1,8 @@
 package aws
 
 import (
+	errorchecker "bucket-details/src/errorcheck"
 	genfun "bucket-details/src/genericfunctions"
-	"fmt"
 	"os"
 	"time"
 
@@ -33,9 +33,7 @@ func CreateNewAwsSession() *session.Session {
 // Return array with all buckets
 func ListBuckets(client s3iface.S3API) []*s3.Bucket {
 	listBucketsOutput, err := client.ListBuckets(&s3.ListBucketsInput{})
-	if err != nil {
-		fmt.Printf("Something goes wrong: %v", err)
-	}
+	errorchecker.CheckFatal(err, "ListBuckets")
 
 	return listBucketsOutput.Buckets
 }
@@ -95,9 +93,7 @@ func CheckS3BucketCost(client costexploreriface.CostExplorerAPI, tagValue string
 	input.SetFilter(&filterObject)
 
 	output, err := client.GetCostAndUsage(&input)
-	if err != nil {
-		fmt.Println(err)
-	}
+	errorchecker.CheckError(err, "CheckS3BucketCost")
 
 	return *output.ResultsByTime[0].Total["BlendedCost"].Amount
 }

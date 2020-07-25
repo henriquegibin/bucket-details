@@ -2,9 +2,9 @@ package main
 
 import (
 	"bucket-details/src/aws"
+	errorchecker "bucket-details/src/errorcheck"
 	"bucket-details/src/genericfunctions"
 	"bucket-details/src/structs"
-	"log"
 	"os"
 	"time"
 
@@ -39,9 +39,7 @@ func main() {
 	}
 
 	err := app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
-	}
+	errorchecker.CheckFatal(err, "main")
 }
 
 func getMetadata() {

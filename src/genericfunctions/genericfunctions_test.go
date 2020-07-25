@@ -1,6 +1,7 @@
 package genericfunctions
 
 import (
+	errorchecker "bucket-details/src/errorcheck"
 	"bucket-details/src/structs"
 	"io/ioutil"
 	"os"
@@ -56,9 +57,7 @@ func TestBeautyPrint(t *testing.T) {
 	os.Stdout = rescueStdout
 
 	content, err := ioutil.ReadFile("../../test/fixtures/beautyPrintOutput.txt")
-	if err != nil {
-		t.Error("BeautyPrintOutput file does not exist. Unable to run the test")
-	}
+	errorchecker.CheckError(err, "TestBeautyPrint")
 
 	if string(out) != string(content) {
 		t.Errorf("Expected %s, got %s", string(content), out)
