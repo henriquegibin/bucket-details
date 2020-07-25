@@ -1,6 +1,7 @@
 package aws
 
 import (
+	genfun "bucket-details/src/genericfunctions"
 	"fmt"
 	"os"
 	"time"
@@ -63,42 +64,35 @@ func ListObjects(bucketName *string, client s3iface.S3API, size *[]int64, filesC
 	return *size, *filesCount, *lastModified
 }
 
-// CheckPrice Receive coast explorer instance and tagvalue(bucket name) than query in cost explorer
+// CheckS3BucketCost Receive coast explorer instance and tagvalue(bucket name) than query in cost explorer
 // to check how much this bucket spend this month.
 //
 // Return one string with the amount in dolars
-func CheckPrice(client costexploreriface.CostExplorerAPI, tagValue string) string { // Melhorar essa função. Esta horrivel
+func CheckS3BucketCost(client costexploreriface.CostExplorerAPI, tagValue string) string { // Melhorar essa função. Esta horrivel
 	service := "Amazon Simple Storage Service"
 	metricsValue := "BlendedCost"
 
-	obj1 := &costexplorer.DimensionValues{
-		Key:    aws.String("SERVICE"),
-		Values: []*string{&service},
-	}
+	var dimensionValues costexplorer.DimensionValues
+	var tagValues costexplorer.TagValues
+	var dateInterval costexplorer.DateInterval
+	var filterObject costexplorer.Expression
 
-	obj2 := &costexplorer.TagValues{
-		Key:    aws.String("Name"),
-		Values: []*string{&tagValue},
-	}
+	dimensionValues.SetKey("SERVICE")
+	dimensionValues.SetValues([]*string{&service})
 
-	input := costexplorer.GetCostAndUsageInput{
-		TimePeriod: &costexplorer.DateInterval{
-			Start: aws.String("2020-07-01"),
-			End:   aws.String("2020-07-31"),
-		},
-		Granularity: aws.String("MONTHLY"),
-		Metrics:     []*string{&metricsValue},
-		Filter: &costexplorer.Expression{
-			And: []*costexplorer.Expression{
-				{
-					Dimensions: obj1,
-				},
-				{
-					Tags: obj2,
-				},
-			},
-		},
-	}
+	tagValues.SetKey("Name")
+	tagValues.SetValues([]*string{&tagValue})
+
+	dateInterval.SetStart(genfun.GetFirstLastDayOfMonth("first").Format("2006-01-02"))
+	dateInterval.SetEnd(genfun.GetFirstLastDayOfMonth("last").Format("2006-01-02"))
+
+	filterObject.SetAnd(createFilterExpressionSlice(dimensionValues, tagValues))
+
+	input := costexplorer.GetCostAndUsageInput{}
+	input.SetTimePeriod(&dateInterval)
+	input.SetGranularity("MONTHLY")
+	input.SetMetrics([]*string{&metricsValue})
+	input.SetFilter(&filterObject)
 
 	output, err := client.GetCostAndUsage(&input)
 	if err != nil {
@@ -106,4 +100,20 @@ func CheckPrice(client costexploreriface.CostExplorerAPI, tagValue string) strin
 	}
 
 	return *output.ResultsByTime[0].Total["BlendedCost"].Amount
+}
+
+// createFilterExpressionSlice Receive one DimensionValue object and one TagValue object then create
+// a filterExpressionSlice to use during the GetCostAndUsage.
+//
+// Return a slice with Expression pointers.
+func createFilterExpressionSlice(dimensionValues costexplorer.DimensionValues, tagValue costexplorer.TagValues) []*costexplorer.Expression {
+	var expressionSlice []*costexplorer.Expression
+	var dimensionValuesExpression costexplorer.Expression
+	var tagValueExpression costexplorer.Expression
+
+	dimensionValuesExpression.SetDimensions(&dimensionValues)
+	tagValueExpression.SetTags(&tagValue)
+
+	expressionSlice = append(expressionSlice, &dimensionValuesExpression, &tagValueExpression)
+	return expressionSlice
 }

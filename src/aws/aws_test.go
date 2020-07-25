@@ -152,8 +152,45 @@ func TestCheckPrice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := CheckPrice(tt.args.client, tt.args.tagValue); got != tt.want {
+			if got := CheckS3BucketCost(tt.args.client, tt.args.tagValue); got != tt.want {
 				t.Errorf("CheckPrice() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_createFilterExpressionSlice(t *testing.T) {
+	var dimension costexplorer.DimensionValues
+	var tags costexplorer.TagValues
+	var values = aws.StringSlice([]string{"test"})
+
+	dimension.SetKey("Key")
+	dimension.SetValues(values)
+
+	tags.SetKey("Key")
+	tags.SetValues(values)
+
+	var expect = []*costexplorer.Expression{
+		{Dimensions: &dimension},
+		{Tags: &tags},
+	}
+
+	type args struct {
+		dimensionValues costexplorer.DimensionValues
+		tagValue        costexplorer.TagValues
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want []*costexplorer.Expression
+	}{
+		{"Generate a slice of Expressions with dimensionValues and tagValues", args{dimension, tags}, expect},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := createFilterExpressionSlice(tt.args.dimensionValues, tt.args.tagValue); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("createFilterExpressionSlice() = %v, want %v", got, tt.want)
 			}
 		})
 	}
