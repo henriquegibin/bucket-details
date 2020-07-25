@@ -37,9 +37,9 @@ func GetFirstLastDayOfMonth(day string) time.Time {
 		y, m, _ := time.Now().Date()
 		d := time.Date(y, m, 1, 0, 0, 0, 0, time.UTC)
 		return d
-	} else {
-		firstDay := GetFirstLastDayOfMonth("first")
-		lastDay := firstDay.AddDate(0, 1, 0).Add(-time.Millisecond)
-		return lastDay
 	}
+
+	firstDay := GetFirstLastDayOfMonth("first")
+	lastDay := firstDay.AddDate(0, 1, 0).Add(-time.Millisecond)
+	return lastDay
 }
