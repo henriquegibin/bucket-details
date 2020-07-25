@@ -57,7 +57,7 @@ func getMetadata() {
 		var bucketDetails structs.BucketInfo
 
 		sizeEachObject, filesCount, lastModified := aws.ListObjects(bucket.Name, s3Instance, &size, &filesCount, &lastModified)
-		bucketPrice := aws.CheckPrice(costexplorerInstance, *bucket.Name)
+		bucketPrice := aws.CheckS3BucketCost(costexplorerInstance, *bucket.Name)
 
 		bucketDetails.Name = *bucket.Name
 		bucketDetails.CreationDate = *bucket.CreationDate

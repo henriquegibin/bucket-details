@@ -3,6 +3,7 @@ package genericfunctions
 import (
 	"bucket-details/src/structs"
 	"fmt"
+	"time"
 )
 
 // BucketSize Receive int64 array then sum all itens inside.
@@ -28,4 +29,17 @@ func BeautyPrint(bucketDetails structs.BucketInfo) {
 	fmt.Printf("Bucket Last Modified From Newest File: %s\n", bucketDetails.LastModifiedFromNewestFile)
 	fmt.Printf("Bucket Cost:                           $%s\n", bucketDetails.Cost)
 	fmt.Println("----------------")
+}
+
+// GetFirstLastDayOfMonth depois
+func GetFirstLastDayOfMonth(day string) time.Time {
+	if day == "first" {
+		y, m, _ := time.Now().Date()
+		d := time.Date(y, m, 1, 0, 0, 0, 0, time.UTC)
+		return d
+	} else {
+		firstDay := GetFirstLastDayOfMonth("first")
+		lastDay := firstDay.AddDate(0, 1, 0).Add(-time.Millisecond)
+		return lastDay
+	}
 }

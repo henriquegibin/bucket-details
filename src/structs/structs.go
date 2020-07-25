@@ -1,6 +1,8 @@
 package structs
 
-import "time"
+import (
+	"time"
+)
 
 // BucketInfo struct represent all bucket info retrieved from bucket
 type BucketInfo struct {
