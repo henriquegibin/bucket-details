@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/costexplorer"
+	"github.com/aws/aws-sdk-go/service/costexplorer/costexploreriface"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 )
@@ -62,7 +63,7 @@ func ListObjects(bucketName *string, client s3iface.S3API, size *[]int64, filesC
 // to check how much this bucket spend this month.
 //
 // Return one string with the amount in dolars
-func CheckPrice(ceInstance *costexplorer.CostExplorer, tagValue string) string {
+func CheckPrice(client costexploreriface.CostExplorerAPI, tagValue string) string {
 	service := "Amazon Simple Storage Service"
 	metricsValue := "BlendedCost"
 
@@ -95,7 +96,7 @@ func CheckPrice(ceInstance *costexplorer.CostExplorer, tagValue string) string {
 		},
 	}
 
-	output, err := ceInstance.GetCostAndUsage(&input)
+	output, err := client.GetCostAndUsage(&input)
 	if err != nil {
 		fmt.Println(err)
 	}

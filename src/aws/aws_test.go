@@ -6,12 +6,18 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/costexplorer"
+	"github.com/aws/aws-sdk-go/service/costexplorer/costexploreriface"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 )
 
 type mockS3Client struct {
 	s3iface.S3API
+}
+
+type mockCostExplorerClient struct {
+	costexploreriface.CostExplorerAPI
 }
 
 var creationDate = time.Date(2020, time.July, 23, 22, 41, 0, 0, time.UTC)
@@ -96,6 +102,50 @@ func TestListObjects(t *testing.T) {
 			}
 			if got1 != tt.want1 {
 				t.Errorf("ListObjects() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func (m *mockCostExplorerClient) GetCostAndUsage(input *costexplorer.GetCostAndUsageInput) (*costexplorer.GetCostAndUsageOutput, error) {
+	metricValue := costexplorer.MetricValue{}
+	metricValue.SetAmount("10.00")
+
+	total := map[string]*costexplorer.MetricValue{
+		"BlendedCost": &metricValue,
+	}
+
+	resultByTime := *&costexplorer.ResultByTime{
+		Total: total,
+	}
+	resultByTimeColletion := make([]*costexplorer.ResultByTime, 1)
+	resultByTimeColletion[0] = &resultByTime
+
+	output := &costexplorer.GetCostAndUsageOutput{}
+	output.SetResultsByTime(resultByTimeColletion)
+
+	return output, nil
+}
+
+func TestCheckPrice(t *testing.T) {
+	mockCostExplorerClient := &mockCostExplorerClient{}
+
+	type args struct {
+		client   costexploreriface.CostExplorerAPI
+		tagValue string
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"Get Cost from a bucket", args{mockCostExplorerClient, "bucketName"}, "10.00"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := CheckPrice(tt.args.client, tt.args.tagValue); got != tt.want {
+				t.Errorf("CheckPrice() = %v, want %v", got, tt.want)
 			}
 		})
 	}
