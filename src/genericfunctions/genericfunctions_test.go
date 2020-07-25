@@ -46,7 +46,7 @@ func TestBeautyPrint(t *testing.T) {
 		CreationDate:               date,
 		FilesCount:                 130,
 		Size:                       1024,
-		LastModifiedFromNewestFile: "",
+		LastModifiedFromNewestFile: date,
 		Cost:                       "10.00",
 	}
 	BeautyPrint(infos)

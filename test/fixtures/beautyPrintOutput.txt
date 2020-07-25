@@ -3,6 +3,6 @@ Bucket Name:                           bucket-name
 Bucket Creation:                       2020-07-23 22:41:00 +0000 UTC
 Bucket Files:                          130
 Bucket Size:                           1024
-Bucket Last Modified From Newest File: 
+Bucket Last Modified From Newest File: 2020-07-23 22:41:00 +0000 UTC
 Bucket Cost:                           $10.00
 ----------------

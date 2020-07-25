@@ -8,6 +8,6 @@ type BucketInfo struct {
 	CreationDate               time.Time
 	FilesCount                 int
 	Size                       int64
-	LastModifiedFromNewestFile string
+	LastModifiedFromNewestFile time.Time
 	Cost                       string
 }
