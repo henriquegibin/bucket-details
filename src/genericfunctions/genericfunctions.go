@@ -5,7 +5,9 @@ import (
 	"fmt"
 )
 
-// BucketSize This function sum all itens in array to get the total size of bucket
+// BucketSize Receive int64 array then sum all itens inside.
+//
+// Return int64 value.
 func BucketSize(array []int64) int64 {
 	result := int64(0)
 	for _, v := range array {
@@ -16,7 +18,7 @@ func BucketSize(array []int64) int64 {
 	return result
 }
 
-// BeautyPrint This function print all bucket infos formatted
+// BeautyPrint Receive one BucketInfo object then print every property
 func BeautyPrint(bucketDetails structs.BucketInfo) {
 	fmt.Println("----------------")
 	fmt.Printf("Bucket Name:                           %s\n", bucketDetails.Name)
