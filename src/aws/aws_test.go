@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"bucket-details/src/structs"
 	"reflect"
 	"testing"
 	"time"
@@ -21,19 +22,25 @@ type mockCostExplorerClient struct {
 }
 
 var creationDate = time.Date(2020, time.July, 23, 22, 41, 0, 0, time.UTC)
-var buckets = []*s3.Bucket{
+var allBuckets = []*s3.Bucket{
 	{
 		CreationDate: &creationDate,
-		Name:         aws.String("bucket1"),
+		Name:         aws.String("1bucket"),
 	}, {
 		CreationDate: &creationDate,
 		Name:         aws.String("bucket2"),
+	}, {
+		CreationDate: &creationDate,
+		Name:         aws.String("4-bucket.example.net"),
 	},
 }
+var prefixBuckets = []*s3.Bucket{allBuckets[0]}
+var suffixBuckets = []*s3.Bucket{allBuckets[1]}
+var regexBuckets = []*s3.Bucket{allBuckets[2]}
 
 func (m *mockS3Client) ListBuckets(input *s3.ListBucketsInput) (*s3.ListBucketsOutput, error) {
 	s3Output := s3.ListBucketsOutput{
-		Buckets: buckets,
+		Buckets: allBuckets,
 	}
 
 	return &s3Output, nil
@@ -44,6 +51,7 @@ func TestListBuckets(t *testing.T) {
 
 	type args struct {
 		client s3iface.S3API
+		flags  structs.Flags
 	}
 
 	tests := []struct {
@@ -51,11 +59,14 @@ func TestListBuckets(t *testing.T) {
 		args args
 		want []*s3.Bucket
 	}{
-		{"List all buckets in S3", args{mockS3Client}, buckets},
+		{"List all buckets in S3 without filter", args{mockS3Client, structs.Flags{FilterType: "", FilterValue: ""}}, allBuckets},
+		{"List all buckets in S3 with prefix filter", args{mockS3Client, structs.Flags{FilterType: "prefix", FilterValue: "1"}}, prefixBuckets},
+		{"List all buckets in S3 with suffix filter", args{mockS3Client, structs.Flags{FilterType: "suffix", FilterValue: "2"}}, suffixBuckets},
+		{"List all buckets in S3 with regex filter", args{mockS3Client, structs.Flags{FilterType: "regex", FilterValue: `^[0-9]-[A-z]+\.example\.net$`}}, regexBuckets},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ListBuckets(tt.args.client); !reflect.DeepEqual(got, tt.want) {
+			if got := ListBuckets(tt.args.client, tt.args.flags); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ListBuckets() = %v, want %v", got, tt.want)
 			}
 		})
@@ -191,6 +202,30 @@ func Test_createFilterExpressionSlice(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := createFilterExpressionSlice(tt.args.dimensionValues, tt.args.tagValue); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("createFilterExpressionSlice() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_filterBuckets(t *testing.T) {
+	type args struct {
+		buckets []*s3.Bucket
+		flags   structs.Flags
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want []*s3.Bucket
+	}{
+		{"Return buckets after prefix filter", args{allBuckets, structs.Flags{FilterType: "prefix", FilterValue: "1"}}, prefixBuckets},
+		{"Return buckets after suffix filter", args{allBuckets, structs.Flags{FilterType: "suffix", FilterValue: "2"}}, suffixBuckets},
+		{"Return buckets after regex filter", args{allBuckets, structs.Flags{FilterType: "regex", FilterValue: `^[0-9]-[A-z]+\.example\.net$`}}, regexBuckets},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := filterBuckets(tt.args.buckets, tt.args.flags); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("filterBuckets() = %v, want %v", got, tt.want)
 			}
 		})
 	}

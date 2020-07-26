@@ -3,7 +3,11 @@ package aws
 import (
 	errorchecker "bucket-details/src/errorcheck"
 	genfun "bucket-details/src/genericfunctions"
+	"bucket-details/src/structs"
+	"errors"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -31,9 +35,14 @@ func CreateNewAwsSession() *session.Session {
 // ListBuckets Receive s3 instance then list all bucker inside AWS S3.
 //
 // Return array with all buckets
-func ListBuckets(client s3iface.S3API) []*s3.Bucket {
+func ListBuckets(client s3iface.S3API, flags structs.Flags) []*s3.Bucket {
 	listBucketsOutput, err := client.ListBuckets(&s3.ListBucketsInput{})
 	errorchecker.CheckFatal(err, "ListBuckets")
+
+	if flags.FilterType != "" {
+		buckets := filterBuckets(listBucketsOutput.Buckets, flags)
+		return buckets
+	}
 
 	return listBucketsOutput.Buckets
 }
@@ -112,4 +121,35 @@ func createFilterExpressionSlice(dimensionValues costexplorer.DimensionValues, t
 
 	expressionSlice = append(expressionSlice, &dimensionValuesExpression, &tagValueExpression)
 	return expressionSlice
+}
+
+func filterBuckets(buckets []*s3.Bucket, flags structs.Flags) []*s3.Bucket {
+	var filteredBuckets []*s3.Bucket
+
+	switch flags.FilterType {
+	case "prefix":
+		for _, bucket := range buckets {
+			if strings.HasPrefix(*bucket.Name, flags.FilterValue) {
+				filteredBuckets = append(filteredBuckets, bucket)
+			}
+		}
+	case "suffix":
+		for _, bucket := range buckets {
+			if strings.HasSuffix(*bucket.Name, flags.FilterValue) {
+				filteredBuckets = append(filteredBuckets, bucket)
+			}
+		}
+	case "regex":
+		for _, bucket := range buckets {
+			regex := regexp.MustCompile(flags.FilterValue)
+			if regex.MatchString(*bucket.Name) {
+				filteredBuckets = append(filteredBuckets, bucket)
+			}
+		}
+	default:
+		e := errors.New("Invalid filterType value. Please use prefix or suffix or regex")
+		errorchecker.CheckFatal(e, "filterBuckets")
+	}
+
+	return filteredBuckets
 }

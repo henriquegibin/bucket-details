@@ -17,24 +17,22 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "Bucket Details"
 	app.Usage = "Use this CLI to retreive metadata from all AWS Buckets. Use flags to specifie filters and more options"
+	app.UsageText = "bucket-details [global options]"
 
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
-			Name:  "lang",
-			Value: "english",
-			Usage: "language for the greeting",
+			Name:  "filterType",
+			Usage: "Choose the method used to filter buckets. Default is without filter. Possible values are: prefix, regexp, suffix. This flag needs to be used with filterValue",
+		},
+		&cli.StringFlag{
+			Name:  "filterValue",
+			Usage: "Pass your string to use as filter. This flag needs to be used with filterType",
 		},
 	}
 
 	app.Action = func(c *cli.Context) error {
-		getMetadata()
-		// var output string
-		// if c.String("lang") == "spanish" {
-		// 	output = "Hola"
-		// } else {
-		// 	output = "Hello"
-		// }
-		// fmt.Println(output)
+		flags := genericfunctions.FlagsStructCreator(c.String("filterType"), c.String("filterValue"))
+		getMetadata(flags)
 		return nil
 	}
 
@@ -42,7 +40,7 @@ func main() {
 	errorchecker.CheckFatal(err, "main")
 }
 
-func getMetadata() {
+func getMetadata(flags structs.Flags) {
 	awsSession := aws.CreateNewAwsSession()
 	s3Instance := s3.New(awsSession)
 	costexplorerInstance := costexplorer.New(awsSession)
@@ -50,7 +48,7 @@ func getMetadata() {
 	var filesCount = 0
 	var lastModified time.Time
 
-	buckets := aws.ListBuckets(s3Instance)
+	buckets := aws.ListBuckets(s3Instance, flags)
 	for _, bucket := range buckets {
 		var bucketDetails structs.BucketInfo
 

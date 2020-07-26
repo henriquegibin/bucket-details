@@ -31,7 +31,9 @@ func BeautyPrint(bucketDetails structs.BucketInfo) {
 	fmt.Println("----------------")
 }
 
-// GetFirstLastDayOfMonth depois
+// GetFirstLastDayOfMonth Receive one string containing first or last.
+//
+// Return a time object with first or last day of the current month
 func GetFirstLastDayOfMonth(day string) time.Time {
 	if day == "first" {
 		y, m, _ := time.Now().Date()
@@ -42,4 +44,12 @@ func GetFirstLastDayOfMonth(day string) time.Time {
 	firstDay := GetFirstLastDayOfMonth("first")
 	lastDay := firstDay.AddDate(0, 1, 0).Add(-time.Millisecond)
 	return lastDay
+}
+
+// FlagsStructCreator receive all flags values and return one flag struct
+func FlagsStructCreator(flags ...string) structs.Flags { // Melhorar depois
+	var flagsStruct structs.Flags
+	flagsStruct.FilterType = flags[0]
+	flagsStruct.FilterValue = flags[1]
+	return flagsStruct
 }

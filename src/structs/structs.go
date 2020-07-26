@@ -13,3 +13,9 @@ type BucketInfo struct {
 	LastModifiedFromNewestFile time.Time
 	Cost                       string
 }
+
+// Flags struct represent all flags received from the user
+type Flags struct {
+	FilterType  string
+	FilterValue string
+}
