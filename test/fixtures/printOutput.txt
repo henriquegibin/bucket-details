@@ -1,0 +1,1 @@
+{"Name":"bucket-name","CreationDate":"2020-07-23T22:41:00Z","FilesCount":130,"Size":1024,"LastModifiedFromNewestFile":"2020-07-23T22:41:00Z","Cost":"10.00","Extras":{"LifeCycle":null,"BucketACL":null,"BucketEncryption":null,"BucketLocation":"","BucketTagging":null}}

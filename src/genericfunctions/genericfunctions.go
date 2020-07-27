@@ -3,6 +3,7 @@ package genericfunctions
 import (
 	errorchecker "bucket-details/src/errorcheck"
 	"bucket-details/src/structs"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -21,17 +22,14 @@ func BucketSize(array []int64) int64 {
 	return result
 }
 
-// BeautyPrint Receive one BucketInfo object then print every property
-func BeautyPrint(bucketDetails structs.BucketInfo) {
-	fmt.Println("----------------")
-	fmt.Printf("Bucket Name:                           %s\n", bucketDetails.Name)
-	fmt.Printf("Bucket Creation:                       %s\n", bucketDetails.CreationDate)
-	fmt.Printf("Bucket Files:                          %d\n", bucketDetails.FilesCount)
-	fmt.Printf("Bucket Size:                           %d\n", bucketDetails.Size)
-	fmt.Printf("Bucket Last Modified From Newest File: %s\n", bucketDetails.LastModifiedFromNewestFile)
-	fmt.Printf("Bucket Cost:                           $%s\n", bucketDetails.Cost)
-	fmt.Printf("Bucket Extras:                         %+v\n", bucketDetails.Extras)
-	fmt.Println("----------------")
+// Print Receive one BucketInfo object then print as json
+func Print(bucketDetails structs.BucketInfo) {
+	json, err := json.Marshal(bucketDetails)
+	if err != nil {
+		errorchecker.CheckError(err, "Print")
+	}
+
+	fmt.Println(string(json))
 }
 
 // GetFirstLastDayOfMonth Receive one string containing first or last.

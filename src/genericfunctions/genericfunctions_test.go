@@ -36,7 +36,8 @@ func TestBucketSize(t *testing.T) {
 // If you need to change something in the fixture file, pay attention.
 // Depending of the configurations in your editor, you can accidentally create
 // diffs, For exemplo, if your editor remove empty spaces at the end of a line.
-func TestBeautyPrint(t *testing.T) {
+func TestPrint(t *testing.T) {
+	var extras structs.Extras
 	rescueStdout := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
@@ -49,15 +50,16 @@ func TestBeautyPrint(t *testing.T) {
 		Size:                       1024,
 		LastModifiedFromNewestFile: date,
 		Cost:                       "10.00",
+		Extras:                     extras,
 	}
-	BeautyPrint(infos)
+	Print(infos)
 
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
 	os.Stdout = rescueStdout
 
-	content, err := ioutil.ReadFile("../../test/fixtures/beautyPrintOutput.txt")
-	errorchecker.CheckError(err, "TestBeautyPrint")
+	content, err := ioutil.ReadFile("../../test/fixtures/printOutput.txt")
+	errorchecker.CheckError(err, "TestPrint")
 
 	if string(out) != string(content) {
 		t.Errorf("Expected %s, got %s", string(content), out)
