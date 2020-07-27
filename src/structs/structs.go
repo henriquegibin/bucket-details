@@ -18,9 +18,9 @@ type BucketInfo struct {
 type Flags struct {
 	FilterType       string
 	FilterValue      string
-	LifeCycle        string
-	BucketACL        string
-	BucketEncryption string
-	BucketLocation   string
-	BucketTagging    string
+	LifeCycle        bool
+	BucketACL        bool
+	BucketEncryption bool
+	BucketLocation   bool
+	BucketTagging    bool
 }
