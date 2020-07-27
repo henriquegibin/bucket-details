@@ -1,8 +1,10 @@
 package genericfunctions
 
 import (
+	errorchecker "bucket-details/src/errorcheck"
 	"bucket-details/src/structs"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -51,10 +53,17 @@ func FlagsStructCreator(flags ...string) structs.Flags { // Melhorar depois
 	var flagsStruct structs.Flags
 	flagsStruct.FilterType = flags[0]
 	flagsStruct.FilterValue = flags[1]
-	flagsStruct.LifeCycle = flags[2]
-	flagsStruct.BucketACL = flags[3]
-	flagsStruct.BucketEncryption = flags[4]
-	flagsStruct.BucketLocation = flags[5]
-	flagsStruct.BucketTagging = flags[6]
+	flagsStruct.LifeCycle = parseBool(flags[2])
+	flagsStruct.BucketACL = parseBool(flags[3])
+	flagsStruct.BucketEncryption = parseBool(flags[4])
+	flagsStruct.BucketLocation = parseBool(flags[5])
+	flagsStruct.BucketTagging = parseBool(flags[6])
 	return flagsStruct
+}
+
+// parseBool convert string into bool
+func parseBool(flag string) bool {
+	res, err := strconv.ParseBool(flag)
+	errorchecker.CheckFatal(err, "parseBool")
+	return res
 }
