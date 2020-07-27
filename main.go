@@ -39,7 +39,7 @@ func main() {
 			Value: "false",
 		},
 		&cli.StringFlag{
-			Name:  "bucket-Encryption",
+			Name:  "bucket-encryption",
 			Usage: "Pass this flag to retreive the bucket encryption",
 			Value: "false",
 		},
@@ -59,11 +59,11 @@ func main() {
 		flags := genericfunctions.FlagsStructCreator(
 			c.String("filter-type"),
 			c.String("filter-value"),
-			c.String("lifeCycle"),
-			c.String("bucketACL"),
-			c.String("bucketEncryption"),
-			c.String("bucketLocation"),
-			c.String("bucketTagging"),
+			c.String("life-cycle"),
+			c.String("bucket-acl"),
+			c.String("bucket-encryption"),
+			c.String("bucket-location"),
+			c.String("bucket-tagging"),
 		)
 		getMetadata(flags)
 		return nil
