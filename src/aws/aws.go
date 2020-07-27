@@ -152,6 +152,10 @@ func GetBucketLocation(client s3iface.S3API, bucketName *string) (string, error)
 		return "", err
 	}
 
+	if locationOutput.LocationConstraint == nil {
+		return "us-east-1", nil
+	}
+
 	return *locationOutput.LocationConstraint, nil
 }
 

@@ -118,7 +118,7 @@ func getMetadata(flags structs.Flags) {
 		bucketDetails.LastModifiedFromNewestFile = lastModified
 		bucketDetails.Cost = bucketPrice
 		bucketDetails.Extras = bucketExtras
-		genericfunctions.BeautyPrint(bucketDetails)
+		genericfunctions.Print(bucketDetails)
 	}
 }
 
