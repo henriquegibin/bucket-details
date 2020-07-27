@@ -51,5 +51,10 @@ func FlagsStructCreator(flags ...string) structs.Flags { // Melhorar depois
 	var flagsStruct structs.Flags
 	flagsStruct.FilterType = flags[0]
 	flagsStruct.FilterValue = flags[1]
+	flagsStruct.LifeCycle = flags[2]
+	flagsStruct.BucketACL = flags[3]
+	flagsStruct.BucketEncryption = flags[4]
+	flagsStruct.BucketLocation = flags[5]
+	flagsStruct.BucketTagging = flags[6]
 	return flagsStruct
 }

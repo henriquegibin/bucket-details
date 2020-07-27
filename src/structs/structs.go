@@ -16,6 +16,11 @@ type BucketInfo struct {
 
 // Flags struct represent all flags received from the user
 type Flags struct {
-	FilterType  string
-	FilterValue string
+	FilterType       string
+	FilterValue      string
+	LifeCycle        string
+	BucketACL        string
+	BucketEncryption string
+	BucketLocation   string
+	BucketTagging    string
 }

@@ -22,7 +22,7 @@ import (
 // CreateNewAwsSession Create a new aws session using access_key
 // and secret_access_key from environment variables.
 //
-//Return one aws.session
+// Return one aws.session.
 func CreateNewAwsSession() *session.Session {
 	awsConfig := &aws.Config{
 		Credentials: credentials.NewStaticCredentials(os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY"), ""),
@@ -34,7 +34,7 @@ func CreateNewAwsSession() *session.Session {
 
 // ListBuckets Receive s3 instance then list all bucker inside AWS S3.
 //
-// Return array with all buckets
+// Return array with all buckets.
 func ListBuckets(client s3iface.S3API, flags structs.Flags) []*s3.Bucket {
 	listBucketsOutput, err := client.ListBuckets(&s3.ListBucketsInput{})
 	errorchecker.CheckFatal(err, "ListBuckets")
@@ -50,7 +50,7 @@ func ListBuckets(client s3iface.S3API, flags structs.Flags) []*s3.Bucket {
 // ListObjects Receive a bucket name than iterate from all file pages counting
 //how many files have inside and put the object size in an array.
 //
-// Return array with all object sizes and an integer with the files count
+// Return array with all object sizes and an integer with the files count.
 func ListObjects(bucketName *string, client s3iface.S3API, size *[]int64, filesCount *int, lastModified *time.Time) ([]int64, int, time.Time) {
 	listObjectsV2Input := s3.ListObjectsV2Input{
 		Bucket: bucketName,
@@ -74,7 +74,7 @@ func ListObjects(bucketName *string, client s3iface.S3API, size *[]int64, filesC
 // CheckS3BucketCost Receive coast explorer instance and tagvalue(bucket name) than query in cost explorer
 // to check how much this bucket spend this month.
 //
-// Return one string with the amount in dolars
+// Return one string with the amount in dolars.
 func CheckS3BucketCost(client costexploreriface.CostExplorerAPI, tagValue string) string { // Melhorar essa função. Esta horrivel
 	service := "Amazon Simple Storage Service"
 	metricsValue := "BlendedCost"
@@ -105,6 +105,66 @@ func CheckS3BucketCost(client costexploreriface.CostExplorerAPI, tagValue string
 	errorchecker.CheckError(err, "CheckS3BucketCost")
 
 	return *output.ResultsByTime[0].Total["BlendedCost"].Amount
+}
+
+// GetBucketLifeCycle Receive s3 client and bucket name.
+//
+// Return a lifecycle output.
+func GetBucketLifeCycle(client s3iface.S3API, bucketName *string) ([]*s3.LifecycleRule, error) {
+	lifeCycleOutput, err := client.GetBucketLifecycleConfiguration(&s3.GetBucketLifecycleConfigurationInput{Bucket: bucketName})
+	if err != nil {
+		return nil, err
+	}
+
+	return lifeCycleOutput.Rules, err
+}
+
+// GetBucketACL Receive s3 client and bucket name.
+//
+// Return a list of users and level permissions.
+func GetBucketACL(client s3iface.S3API, bucketName *string) ([]*s3.Grant, error) {
+	aclOutput, err := client.GetBucketAcl(&s3.GetBucketAclInput{Bucket: bucketName})
+	if err != nil {
+		return nil, err
+	}
+
+	return aclOutput.Grants, nil
+}
+
+// GetBucketEncryption Receive s3 client and bucket name.
+//
+// Return a slice with all server side encriptyon rules.
+func GetBucketEncryption(client s3iface.S3API, bucketName *string) ([]*s3.ServerSideEncryptionRule, error) {
+	encryptionOutput, err := client.GetBucketEncryption(&s3.GetBucketEncryptionInput{Bucket: bucketName})
+	if err != nil {
+		return nil, err
+	}
+
+	return encryptionOutput.ServerSideEncryptionConfiguration.Rules, nil
+}
+
+// GetBucketLocation Receive s3 client and bucket name.
+//
+// Return a string representation of bucket location.
+func GetBucketLocation(client s3iface.S3API, bucketName *string) (string, error) {
+	locationOutput, err := client.GetBucketLocation(&s3.GetBucketLocationInput{Bucket: bucketName})
+	if err != nil {
+		return "", err
+	}
+
+	return *locationOutput.LocationConstraint, nil
+}
+
+// GetBucketTagging Receive s3 client and bucket name.
+//
+// Return a string representation of a bucket tagSet.
+func GetBucketTagging(client s3iface.S3API, bucketName *string) ([]*s3.Tag, error) {
+	taggingOutput, err := client.GetBucketTagging(&s3.GetBucketTaggingInput{Bucket: bucketName})
+	if err != nil {
+		return nil, err
+	}
+
+	return taggingOutput.TagSet, nil
 }
 
 // createFilterExpressionSlice Receive one DimensionValue object and one TagValue object then create
