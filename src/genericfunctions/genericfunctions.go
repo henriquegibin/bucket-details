@@ -30,6 +30,7 @@ func BeautyPrint(bucketDetails structs.BucketInfo) {
 	fmt.Printf("Bucket Size:                           %d\n", bucketDetails.Size)
 	fmt.Printf("Bucket Last Modified From Newest File: %s\n", bucketDetails.LastModifiedFromNewestFile)
 	fmt.Printf("Bucket Cost:                           $%s\n", bucketDetails.Cost)
+	fmt.Printf("Bucket Extras:                         %+v\n", bucketDetails.Extras)
 	fmt.Println("----------------")
 }
 
