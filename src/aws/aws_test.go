@@ -2,6 +2,7 @@ package aws
 
 import (
 	"bucket-details/src/structs"
+	"errors"
 	"reflect"
 	"testing"
 	"time"
@@ -146,7 +147,7 @@ func (m *mockCostExplorerClient) GetCostAndUsage(input *costexplorer.GetCostAndU
 	return output, nil
 }
 
-func TestCheckPrice(t *testing.T) {
+func TestCheckS3BucketCost(t *testing.T) {
 	mockCostExplorerClient := &mockCostExplorerClient{}
 
 	type args struct {
@@ -164,7 +165,7 @@ func TestCheckPrice(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := CheckS3BucketCost(tt.args.client, tt.args.tagValue); got != tt.want {
-				t.Errorf("CheckPrice() = %v, want %v", got, tt.want)
+				t.Errorf("CheckS3BucketCost() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -226,6 +227,269 @@ func Test_filterBuckets(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := filterBuckets(tt.args.buckets, tt.args.flags); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("filterBuckets() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func (m *mockS3Client) GetBucketLifecycleConfiguration(input *s3.GetBucketLifecycleConfigurationInput) (*s3.GetBucketLifecycleConfigurationOutput, error) {
+	var lifecycleExpiration = s3.LifecycleExpiration{}
+	lifecycleExpiration.SetDays(2)
+
+	var rule = s3.LifecycleRule{}
+	rule.SetExpiration(&lifecycleExpiration)
+
+	var lifeCycleOutput = s3.GetBucketLifecycleConfigurationOutput{}
+	if *input.Bucket == "hasLifeCycle" {
+		lifeCycleOutput.SetRules([]*s3.LifecycleRule{&rule})
+		return &lifeCycleOutput, nil
+	}
+
+	return &lifeCycleOutput, errors.New("Fail")
+}
+
+func TestGetBucketLifeCycle(t *testing.T) {
+	mockS3Client := &mockS3Client{}
+	var lifeCycleRules = []*s3.LifecycleRule{
+		{
+			Expiration: &s3.LifecycleExpiration{
+				Days: aws.Int64(2),
+			},
+		},
+	}
+
+	type args struct {
+		client     s3iface.S3API
+		bucketName *string
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    []*s3.LifecycleRule
+		wantErr bool
+	}{
+		{"Return lifeCycle rules", args{mockS3Client, aws.String("hasLifeCycle")}, lifeCycleRules, false},
+		{"Return error", args{mockS3Client, aws.String("noLifeCycle")}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetBucketLifeCycle(tt.args.client, tt.args.bucketName)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetBucketLifeCycle() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetBucketLifeCycle() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func (m *mockS3Client) GetBucketAcl(input *s3.GetBucketAclInput) (*s3.GetBucketAclOutput, error) {
+	var displayName = "harry"
+	var permission = "FULL_CONTROL"
+
+	var grantee = s3.Grantee{}
+	grantee.SetDisplayName(displayName)
+
+	var grants = s3.Grant{}
+	grants.SetPermission(permission)
+	grants.SetGrantee(&grantee)
+
+	var ACLOutput = s3.GetBucketAclOutput{}
+	if *input.Bucket == "hasGrants" {
+		ACLOutput.SetGrants([]*s3.Grant{&grants})
+		return &ACLOutput, nil
+	}
+
+	return &ACLOutput, errors.New("Fail")
+}
+
+func TestGetBucketACL(t *testing.T) {
+	mockS3Client := &mockS3Client{}
+	var grants = []*s3.Grant{
+		{
+			Grantee: &s3.Grantee{
+				DisplayName: aws.String("harry"),
+			},
+			Permission: aws.String("FULL_CONTROL"),
+		},
+	}
+
+	type args struct {
+		client     s3iface.S3API
+		bucketName *string
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    []*s3.Grant
+		wantErr bool
+	}{
+		{"Return all grants", args{mockS3Client, aws.String("hasGrants")}, grants, false},
+		{"Return error", args{mockS3Client, aws.String("noGrants")}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetBucketACL(tt.args.client, tt.args.bucketName)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetBucketACL() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetBucketACL() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func (m *mockS3Client) GetBucketEncryption(input *s3.GetBucketEncryptionInput) (*s3.GetBucketEncryptionOutput, error) {
+	var encryptionByDefault = s3.ServerSideEncryptionByDefault{}
+	encryptionByDefault.SetSSEAlgorithm("harry")
+
+	var encryptionRule = s3.ServerSideEncryptionRule{}
+	encryptionRule.SetApplyServerSideEncryptionByDefault(&encryptionByDefault)
+
+	var encryptionConfiguration = s3.ServerSideEncryptionConfiguration{}
+	encryptionConfiguration.SetRules([]*s3.ServerSideEncryptionRule{&encryptionRule})
+
+	var encryptionOutput = s3.GetBucketEncryptionOutput{}
+	if *input.Bucket == "hasEncryption" {
+		encryptionOutput.SetServerSideEncryptionConfiguration(&encryptionConfiguration)
+		return &encryptionOutput, nil
+	}
+
+	return &encryptionOutput, errors.New("Fail")
+}
+
+func TestGetBucketEncryption(t *testing.T) {
+	mockS3Client := &mockS3Client{}
+	var serverSideEncryptionRule = []*s3.ServerSideEncryptionRule{
+		{
+			ApplyServerSideEncryptionByDefault: &s3.ServerSideEncryptionByDefault{
+				SSEAlgorithm: aws.String("harry"),
+			},
+		},
+	}
+
+	type args struct {
+		client     s3iface.S3API
+		bucketName *string
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    []*s3.ServerSideEncryptionRule
+		wantErr bool
+	}{
+		{"Return all bucket Encryption rules", args{mockS3Client, aws.String("hasEncryption")}, serverSideEncryptionRule, false},
+		{"Return error", args{mockS3Client, aws.String("noEncryption")}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetBucketEncryption(tt.args.client, tt.args.bucketName)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetBucketEncryption() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetBucketEncryption() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func (m *mockS3Client) GetBucketLocation(input *s3.GetBucketLocationInput) (*s3.GetBucketLocationOutput, error) {
+	var locationOutput = s3.GetBucketLocationOutput{}
+
+	if *input.Bucket == "withoutErr" {
+		locationOutput.SetLocationConstraint(s3.BucketLocationConstraintSaEast1)
+		return &locationOutput, nil
+	}
+
+	return &locationOutput, errors.New("Fail")
+}
+
+func TestGetBucketLocation(t *testing.T) {
+	mockS3Client := &mockS3Client{}
+
+	type args struct {
+		client     s3iface.S3API
+		bucketName *string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{"Return where bucket is stored", args{mockS3Client, aws.String("withoutErr")}, "sa-east-1", false},
+		{"Return error", args{mockS3Client, aws.String("locationSP")}, "", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetBucketLocation(tt.args.client, tt.args.bucketName)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetBucketLocation() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetBucketLocation() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func (m *mockS3Client) GetBucketTagging(input *s3.GetBucketTaggingInput) (*s3.GetBucketTaggingOutput, error) {
+	var tagSet = s3.Tag{}
+	tagSet.SetKey("name")
+	tagSet.SetValue("harry")
+
+	var taggingOutput = s3.GetBucketTaggingOutput{}
+
+	if *input.Bucket == "withoutErr" {
+		taggingOutput.SetTagSet([]*s3.Tag{&tagSet})
+		return &taggingOutput, nil
+	}
+
+	return &taggingOutput, errors.New("Fail")
+}
+
+func TestGetBucketTagging(t *testing.T) {
+	mockS3Client := &mockS3Client{}
+	var tags = []*s3.Tag{
+		{
+			Key:   aws.String("name"),
+			Value: aws.String("harry"),
+		},
+	}
+
+	type args struct {
+		client     s3iface.S3API
+		bucketName *string
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    []*s3.Tag
+		wantErr bool
+	}{
+		{"Return where bucket is stored", args{mockS3Client, aws.String("withoutErr")}, tags, false},
+		{"Return error", args{mockS3Client, aws.String("locationSP")}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetBucketTagging(tt.args.client, tt.args.bucketName)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetBucketTagging() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetBucketTagging() = %v, want %v", got, tt.want)
 			}
 		})
 	}

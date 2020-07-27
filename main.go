@@ -21,17 +21,50 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
-			Name:  "filterType",
+			Name:  "filter-type",
 			Usage: "Choose the method used to filter buckets. Default is without filter. Possible values are: prefix, regexp, suffix. This flag needs to be used with filterValue",
 		},
 		&cli.StringFlag{
-			Name:  "filterValue",
+			Name:  "filter-value",
 			Usage: "Pass your string to use as filter. This flag needs to be used with filterType",
+		},
+		&cli.StringFlag{
+			Name:  "life-cycle",
+			Usage: "Pass this flag to retreive the bucket life cycle",
+			Value: "false",
+		},
+		&cli.StringFlag{
+			Name:  "bucket-acl",
+			Usage: "Pass this flag to retreive the bucket bucket acl",
+			Value: "false",
+		},
+		&cli.StringFlag{
+			Name:  "bucket-Encryption",
+			Usage: "Pass this flag to retreive the bucket encryption",
+			Value: "false",
+		},
+		&cli.StringFlag{
+			Name:  "bucket-location",
+			Usage: "Pass this flag to retreive the bucket location",
+			Value: "false",
+		},
+		&cli.StringFlag{
+			Name:  "bucket-tagging",
+			Usage: "Pass this flag to retreive the bucket tagging",
+			Value: "false",
 		},
 	}
 
 	app.Action = func(c *cli.Context) error {
-		flags := genericfunctions.FlagsStructCreator(c.String("filterType"), c.String("filterValue"))
+		flags := genericfunctions.FlagsStructCreator(
+			c.String("filter-type"),
+			c.String("filter-value"),
+			c.String("lifeCycle"),
+			c.String("bucketACL"),
+			c.String("bucketEncryption"),
+			c.String("bucketLocation"),
+			c.String("bucketTagging"),
+		)
 		getMetadata(flags)
 		return nil
 	}
