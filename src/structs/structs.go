@@ -26,6 +26,7 @@ type Flags struct {
 	BucketEncryption bool
 	BucketLocation   bool
 	BucketTagging    bool
+	Debug            bool
 }
 
 // Extras struct represent all aditional data asked via flags

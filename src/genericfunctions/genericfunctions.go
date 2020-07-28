@@ -23,11 +23,9 @@ func BucketSize(array []int64) int64 {
 }
 
 // Print Receive one BucketInfo object then print as json
-func Print(bucketDetails structs.BucketInfo) {
+func Print(bucketDetails structs.BucketInfo, debug bool) {
 	json, err := json.Marshal(bucketDetails)
-	if err != nil {
-		errorchecker.CheckError(err, "Print")
-	}
+	errorchecker.CheckError(err, "Print", debug)
 
 	fmt.Println(string(json))
 }
@@ -57,6 +55,7 @@ func FlagsStructCreator(flags ...string) structs.Flags {
 	flagsStruct.BucketEncryption = parseBool(flags[4])
 	flagsStruct.BucketLocation = parseBool(flags[5])
 	flagsStruct.BucketTagging = parseBool(flags[6])
+	flagsStruct.Debug = parseBool(flags[7])
 	return flagsStruct
 }
 
