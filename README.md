@@ -85,11 +85,11 @@ Here is a list with all flags(you can pass `--help` to list in your terminal):
 
 | Flag                    | Description                                                          |
 | ----------------------- | -------------------------------------------------------------------- |
-| life-cycle value        |  Pass this flag to retreive the bucket life cycle (default: "false") |
-| bucket-acl value        |  Pass this flag to retreive the bucket bucket acl (default: "false") |
-| bucket-encryption value |  Pass this flag to retreive the bucket encryption (default: "false") |
-| bucket-location value   |  Pass this flag to retreive the bucket location (default: "false")   |
-| bucket-tagging value    |  Pass this flag to retreive the bucket tagging (default: "false")    |
+| life-cycle value        |  Pass this flag to retrieve the bucket life cycle (default: "false") |
+| bucket-acl value        |  Pass this flag to retrieve the bucket bucket acl (default: "false") |
+| bucket-Encryption value |  Pass this flag to retrieve the bucket encryption (default: "false") |
+| bucket-location value   |  Pass this flag to retrieve the bucket location (default: "false")   |
+| bucket-tagging value    |  Pass this flag to retrieve the bucket tagging (default: "false")    |
 
 ---
 

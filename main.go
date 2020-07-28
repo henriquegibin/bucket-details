@@ -18,7 +18,7 @@ import (
 func main() {
 	app := cli.NewApp()
 	app.Name = "Bucket Details"
-	app.Usage = "Use this CLI to retreive metadata from all AWS Buckets. Use flags to specifie filters and more options"
+	app.Usage = "Use this CLI to retrieve metadata from all AWS Buckets. Use flags to specifie filters and more options"
 	app.UsageText = "bucket-details [global options]"
 
 	app.Flags = []cli.Flag{
@@ -32,27 +32,27 @@ func main() {
 		},
 		&cli.StringFlag{
 			Name:  "life-cycle",
-			Usage: "Pass this flag to retreive the bucket life cycle",
+			Usage: "Pass this flag to retrieve the bucket life cycle",
 			Value: "false",
 		},
 		&cli.StringFlag{
 			Name:  "bucket-acl",
-			Usage: "Pass this flag to retreive the bucket bucket acl",
+			Usage: "Pass this flag to retrieve the bucket bucket acl",
 			Value: "false",
 		},
 		&cli.StringFlag{
 			Name:  "bucket-encryption",
-			Usage: "Pass this flag to retreive the bucket encryption",
+			Usage: "Pass this flag to retrieve the bucket encryption",
 			Value: "false",
 		},
 		&cli.StringFlag{
 			Name:  "bucket-location",
-			Usage: "Pass this flag to retreive the bucket location",
+			Usage: "Pass this flag to retrieve the bucket location",
 			Value: "false",
 		},
 		&cli.StringFlag{
 			Name:  "bucket-tagging",
-			Usage: "Pass this flag to retreive the bucket tagging",
+			Usage: "Pass this flag to retrieve the bucket tagging",
 			Value: "false",
 		},
 	}
