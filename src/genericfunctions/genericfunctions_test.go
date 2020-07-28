@@ -5,6 +5,7 @@ import (
 	"bucket-details/src/structs"
 	"io/ioutil"
 	"os"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -63,5 +64,67 @@ func TestPrint(t *testing.T) {
 
 	if string(out) != string(content) {
 		t.Errorf("Expected %s, got %s", string(content), out)
+	}
+}
+
+func TestFlagsStructCreator(t *testing.T) {
+	var flags = structs.Flags{
+		FilterType:       "prefix",
+		FilterValue:      "harry",
+		LifeCycle:        true,
+		BucketACL:        true,
+		BucketEncryption: true,
+		BucketLocation:   true,
+		BucketTagging:    true,
+	}
+	var arrayInput = []string{
+		"prefix",
+		"harry",
+		"true",
+		"true",
+		"true",
+		"true",
+		"true",
+	}
+
+	type args struct {
+		flags []string
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want structs.Flags
+	}{
+		{"Return a struct flags", args{arrayInput}, flags},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := FlagsStructCreator(tt.args.flags...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("FlagsStructCreator() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_parseBool(t *testing.T) {
+	type args struct {
+		flag string
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{"Parse a string into bool type", args{"true"}, true},
+		{"Parse a string into bool type", args{"false"}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := parseBool(tt.args.flag); got != tt.want {
+				t.Errorf("parseBool() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

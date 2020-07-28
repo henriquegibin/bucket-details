@@ -40,7 +40,8 @@ func ListBuckets(client s3iface.S3API, flags structs.Flags) []*s3.Bucket {
 	errorchecker.CheckFatal(err, "ListBuckets")
 
 	if flags.FilterType != "" {
-		buckets := filterBuckets(listBucketsOutput.Buckets, flags)
+		buckets, err := filterBuckets(listBucketsOutput.Buckets, flags)
+		errorchecker.CheckFatal(err, "listBuckets")
 		return buckets
 	}
 
@@ -187,7 +188,7 @@ func createFilterExpressionSlice(dimensionValues costexplorer.DimensionValues, t
 	return expressionSlice
 }
 
-func filterBuckets(buckets []*s3.Bucket, flags structs.Flags) []*s3.Bucket {
+func filterBuckets(buckets []*s3.Bucket, flags structs.Flags) ([]*s3.Bucket, error) {
 	var filteredBuckets []*s3.Bucket
 
 	switch flags.FilterType {
@@ -212,8 +213,8 @@ func filterBuckets(buckets []*s3.Bucket, flags structs.Flags) []*s3.Bucket {
 		}
 	default:
 		e := errors.New("Invalid filterType value. Please use prefix or suffix or regex")
-		errorchecker.CheckFatal(e, "filterBuckets")
+		return nil, e
 	}
 
-	return filteredBuckets
+	return filteredBuckets, nil
 }

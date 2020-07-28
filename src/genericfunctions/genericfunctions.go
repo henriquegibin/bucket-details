@@ -48,7 +48,7 @@ func GetFirstLastDayOfMonth(day string) time.Time {
 }
 
 // FlagsStructCreator receive all flags values and return one flag struct
-func FlagsStructCreator(flags ...string) structs.Flags { // Melhorar depois
+func FlagsStructCreator(flags ...string) structs.Flags {
 	var flagsStruct structs.Flags
 	flagsStruct.FilterType = flags[0]
 	flagsStruct.FilterValue = flags[1]
