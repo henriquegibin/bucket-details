@@ -90,6 +90,7 @@ Here is a list with all flags(you can pass `--help` to list in your terminal):
 | bucket-Encryption value |  Pass this flag to retrieve the bucket encryption (default: "false") |
 | bucket-location value   |  Pass this flag to retrieve the bucket location (default: "false")   |
 | bucket-tagging value    |  Pass this flag to retrieve the bucket tagging (default: "false")    |
+| debug value             |  Pass this flag activate errors message. Using this flag might broke some pipelines (e.g. bucket-details --debug true | jq .) (default: "false")|
 
 ---
 

@@ -76,7 +76,7 @@ func ListObjects(bucketName *string, client s3iface.S3API, size *[]int64, filesC
 // to check how much this bucket spend this month.
 //
 // Return one string with the amount in dolars.
-func CheckS3BucketCost(client costexploreriface.CostExplorerAPI, tagValue string) string { // Melhorar essa função. Esta horrivel
+func CheckS3BucketCost(client costexploreriface.CostExplorerAPI, tagValue string, debug bool) string { // Melhorar essa função. Esta horrivel
 	service := "Amazon Simple Storage Service"
 	metricsValue := "BlendedCost"
 
@@ -103,7 +103,7 @@ func CheckS3BucketCost(client costexploreriface.CostExplorerAPI, tagValue string
 	input.SetFilter(&filterObject)
 
 	output, err := client.GetCostAndUsage(&input)
-	errorchecker.CheckError(err, "CheckS3BucketCost")
+	errorchecker.CheckError(err, "CheckS3BucketCost", debug)
 
 	return *output.ResultsByTime[0].Total["BlendedCost"].Amount
 }

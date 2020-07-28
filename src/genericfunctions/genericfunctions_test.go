@@ -53,14 +53,14 @@ func TestPrint(t *testing.T) {
 		Cost:                       "10.00",
 		Extras:                     extras,
 	}
-	Print(infos)
+	Print(infos, false)
 
 	w.Close()
 	out, _ := ioutil.ReadAll(r)
 	os.Stdout = rescueStdout
 
 	content, err := ioutil.ReadFile("../../test/fixtures/printOutput.txt")
-	errorchecker.CheckError(err, "TestPrint")
+	errorchecker.CheckError(err, "TestPrint", true)
 
 	if string(out) != string(content) {
 		t.Errorf("Expected %s, got %s", string(content), out)
@@ -76,10 +76,12 @@ func TestFlagsStructCreator(t *testing.T) {
 		BucketEncryption: true,
 		BucketLocation:   true,
 		BucketTagging:    true,
+		Debug:            true,
 	}
 	var arrayInput = []string{
 		"prefix",
 		"harry",
+		"true",
 		"true",
 		"true",
 		"true",
