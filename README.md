@@ -8,6 +8,7 @@
   - [Build](#Build)
   - [Test](#Test)
 - [Usage](#Usage)
+  - [Filter](#Filter)
 
 ## What is
 
@@ -92,6 +93,38 @@ Here is a list with all flags(you can pass `--help` to list in your terminal):
 | bucket-tagging value    |  Pass this flag to retrieve the bucket tagging (default: "false")    |
 | debug value             |  Pass this flag activate errors message. Using this flag might broke some pipelines (e.g. bucket-details --debug true | jq .) (default: "false")|
 
+The output without `--debug` is in json format. So i recommend you to use [jq](https://stedolan.github.io/jq/) to parse directly in your terminal. But in a large environment you can send to elasticsearch and use kibana to make queries.
+
+If you use jq, the output will look like this:
+
+```bash
+bucket-details | jq .
+{
+  "Name": "bucket-name",
+  "CreationDate": "2016-08-30T17:08:06Z",
+  "FilesCount": 11,
+  "Size": 50,
+  "LastModifiedFromNewestFile": "2020-03-09T18:43:16Z",
+  "Cost": "0.0013039626",
+  "Extras": {
+    "LifeCycle": null,
+    "BucketACL": null,
+    "BucketEncryption": null,
+    "BucketLocation": "",
+    "BucketTagging": null
+  }
+}
+```
+
+Using jq to filter the result:
+
+```bash
+bucket-details | jq '. | "\(.Name) - \(.LastModifiedFromNewestFile)"'
+"bucket-name1 - 2020-03-09T18:43:16Z"
+"bucket-name2 - 2020-07-22T14:04:25Z"
+"bucket-name3 - 2020-03-05T19:55:58Z"
+```
+
 ---
 
 ### Filter
@@ -112,7 +145,9 @@ To use filters you need to pass the flag that indicate `type` and the flag with 
 
 ## Improvements
 
-I'm not happy with the way the code is organized. It's look a mess. And the performance could be better using `go routines` to retrieve all metadatas.
+I'm not happy with the way the code is organized. It's look a mess.
+And the performance could be better using `go routines` to create a parallelism in all api requests.
+More tests. Some functions return errors or has something that make hard to test. I need more study about go tests to resolve this.
 
 If you run inside a private ec2 instance, its faster because of the aws internal communication structure, but i'm not happy with the results yet.
 I will improving using this project to study Go and learn how to use go routines.

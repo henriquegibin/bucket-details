@@ -132,7 +132,7 @@ func (m *mockCostExplorerClient) GetCostAndUsage(input *costexplorer.GetCostAndU
 	metricValue.SetAmount("10.00")
 
 	total := map[string]*costexplorer.MetricValue{
-		"BlendedCost": &metricValue,
+		"UnblendedCost": &metricValue,
 	}
 
 	resultByTime := *&costexplorer.ResultByTime{
