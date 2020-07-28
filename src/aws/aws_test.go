@@ -215,17 +215,24 @@ func Test_filterBuckets(t *testing.T) {
 	}
 
 	tests := []struct {
-		name string
-		args args
-		want []*s3.Bucket
+		name    string
+		args    args
+		want    []*s3.Bucket
+		wantErr bool
 	}{
-		{"Return buckets after prefix filter", args{allBuckets, structs.Flags{FilterType: "prefix", FilterValue: "1"}}, prefixBuckets},
-		{"Return buckets after suffix filter", args{allBuckets, structs.Flags{FilterType: "suffix", FilterValue: "2"}}, suffixBuckets},
-		{"Return buckets after regex filter", args{allBuckets, structs.Flags{FilterType: "regex", FilterValue: `^[0-9]-[A-z]+\.example\.net$`}}, regexBuckets},
+		{"Return buckets after prefix filter", args{allBuckets, structs.Flags{FilterType: "prefix", FilterValue: "1"}}, prefixBuckets, false},
+		{"Return buckets after suffix filter", args{allBuckets, structs.Flags{FilterType: "suffix", FilterValue: "2"}}, suffixBuckets, false},
+		{"Return buckets after regex filter", args{allBuckets, structs.Flags{FilterType: "regex", FilterValue: `^[0-9]-[A-z]+\.example\.net$`}}, regexBuckets, false},
+		{"Return error after invalid filter type", args{allBuckets, structs.Flags{FilterType: "harry"}}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := filterBuckets(tt.args.buckets, tt.args.flags); !reflect.DeepEqual(got, tt.want) {
+			got, err := filterBuckets(tt.args.buckets, tt.args.flags)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("filterBuckets() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("filterBuckets() = %v, want %v", got, tt.want)
 			}
 		})
