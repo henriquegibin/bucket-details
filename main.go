@@ -5,11 +5,13 @@ import (
 	errorchecker "bucket-details/src/errorcheck"
 	"bucket-details/src/genericfunctions"
 	"bucket-details/src/structs"
+	"errors"
 	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/costexplorer"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/urfave/cli"
 )
 
@@ -84,9 +86,30 @@ func getMetadata(flags structs.Flags) {
 	buckets := aws.ListBuckets(s3Instance, flags)
 	for _, bucket := range buckets {
 		var bucketDetails structs.BucketInfo
+		var bucketExtras structs.Extras
 
 		sizeEachObject, filesCount, lastModified := aws.ListObjects(bucket.Name, s3Instance, &size, &filesCount, &lastModified)
 		bucketPrice := aws.CheckS3BucketCost(costexplorerInstance, *bucket.Name)
+
+		if flags.LifeCycle {
+			getExtraMetaData(s3Instance, bucket.Name, "lifecycle", &bucketExtras)
+		}
+
+		if flags.BucketACL {
+			getExtraMetaData(s3Instance, bucket.Name, "bucketACL", &bucketExtras)
+		}
+
+		if flags.BucketEncryption {
+			getExtraMetaData(s3Instance, bucket.Name, "encryption", &bucketExtras)
+		}
+
+		if flags.BucketLocation {
+			getExtraMetaData(s3Instance, bucket.Name, "location", &bucketExtras)
+		}
+
+		if flags.BucketTagging {
+			getExtraMetaData(s3Instance, bucket.Name, "tagging", &bucketExtras)
+		}
 
 		bucketDetails.Name = *bucket.Name
 		bucketDetails.CreationDate = *bucket.CreationDate
@@ -94,6 +117,49 @@ func getMetadata(flags structs.Flags) {
 		bucketDetails.Size = genericfunctions.BucketSize(sizeEachObject)
 		bucketDetails.LastModifiedFromNewestFile = lastModified
 		bucketDetails.Cost = bucketPrice
-		genericfunctions.BeautyPrint(bucketDetails)
+		bucketDetails.Extras = bucketExtras
+		genericfunctions.Print(bucketDetails)
+	}
+}
+
+func getExtraMetaData(client s3iface.S3API, bucketName *string, extra string, bucketExtras *structs.Extras) {
+	switch extra {
+	case "lifecycle":
+		res, err := aws.GetBucketLifeCycle(client, bucketName)
+		if res != nil {
+			bucketExtras.LifeCycle = res
+		}
+		errorchecker.AWSErrors(err)
+
+	case "bucketACL":
+		res, err := aws.GetBucketACL(client, bucketName)
+		if res != nil {
+			bucketExtras.BucketACL = res
+		}
+		errorchecker.AWSErrors(err)
+
+	case "encryption":
+		res, err := aws.GetBucketEncryption(client, bucketName)
+		if res != nil {
+			bucketExtras.BucketEncryption = res
+		}
+		errorchecker.AWSErrors(err)
+
+	case "location":
+		res, err := aws.GetBucketLocation(client, bucketName)
+		if res != "" {
+			bucketExtras.BucketLocation = res
+		}
+		errorchecker.AWSErrors(err)
+
+	case "tagging":
+		res, err := aws.GetBucketTagging(client, bucketName)
+		if res != nil {
+			bucketExtras.BucketTagging = res
+		}
+		errorchecker.AWSErrors(err)
+
+	default:
+		errorchecker.CheckError(errors.New("Unknown flag passed"), "getExtraMetaData")
 	}
 }
