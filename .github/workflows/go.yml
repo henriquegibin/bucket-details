@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - name: Set up Go 1.x
+    - name: Set up Go
       uses: actions/setup-go@v2
       with:
         go-version: ^1.13
@@ -32,3 +32,9 @@ jobs:
 
     - name: Test
       run: go test -cover ./src/*
+      
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: bucket-details # optional
+        path: ./bucket-details
